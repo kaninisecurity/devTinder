@@ -3,15 +3,11 @@ const connectDB = require("./config/database");
 const app = express();
 const User = require("./models/user");
 
+app.use(express.json());
 
 app.post("/signup", async (req, res) => {
    
-    const user = new User({
-        firstName: "Virat",
-        lastName: "Kholi",
-        emailId: "virat@knoli.in",
-        password: "test323$"
-    });
+    const user = new User(req.body);
     
     try {
         await user.save();
@@ -20,9 +16,34 @@ app.post("/signup", async (req, res) => {
         res.status(400).send("User added successfully" + err.message);
     }
 
-    
-    
+});
 
+app.get("/user", async (req, res) => {
+    const userEmail = req.body.emailId;
+
+    try {
+        console.log(userEmail);
+        const user = await User.findOne({ emailId: userEmail});
+        if(!user){
+            res.status(400).send("User not found");
+        } else {
+            res.send(user);
+        }
+    } catch (error) {
+        res.status(400).send("Something went wrong");
+    }
+});
+
+app.delete("/user", async (req, res) => {
+    const userId = req.body.userId;
+
+    try {
+        const user = await User.findByIdAndDelete(userId);
+        
+        res.send("User deleted successfully");
+    } catch (error) {
+        res.status(400).send("Something went wrong");
+    }
 });
 
 connectDB()
